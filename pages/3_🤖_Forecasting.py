@@ -57,7 +57,7 @@ def load_data():
 
     df = df.resample(rule='1D').sum()
     df['datetime'] = df.index
-    df.index = range(len(df))
+    df.set_index(range(len(df)))
 
     df['year'] = df['datetime'].dt.year
     df['month'] = df['datetime'].dt.month
