@@ -55,7 +55,6 @@ Vous pouvez déjà visualiser les données grâce au _DataFrame_ ci-dessous.""")
 @st.cache_data
 def load_data():
     df = pd.read_csv('data/bakery_sales.csv')
-    df = df.drop(columns='Unnamed: 0')
 
     return df
 
@@ -63,6 +62,10 @@ def load_data():
 df = load_data()
 
 st.dataframe(df, use_container_width=True)
+
+with open('data/bakery_sales.csv', 'r') as f:
+    st.download_button('Téléchargez les données', f, 'bakery_sales.csv', 'text/csv', use_container_width=True)
+
 
 st.markdown("""
 Il est essentiel de commencer par observer vos données. Répondez aux **questions** suivantes:
@@ -156,6 +159,10 @@ with st.expander("Vous voulez savoir à quoi ressemble le code python pour cette
 
 st.dataframe(df, use_container_width=True)
 
+with open('data/bakery_sales_cleaned.csv', 'r') as f:
+    st.download_button('Téléchargez les données', f, 'bakery_sales_cleaned.csv', 'text/csv', use_container_width=True)
+
+
 st.markdown("""
 Selon vous, la variable `ticket_number` était-elle vraiment inutile ? A quoi pourrait-elle nous servir ? 
 """)
@@ -212,7 +219,7 @@ Observons les données pour comprendre ce qu'il se passe.
 shown_samples = st.dataframe(df[df.quantity < 0].sample(
     10, random_state=13), use_container_width=True)
 
-if st.button('Charger 10 autres exemples'):
+if st.button('Charger 10 autres exemples', use_container_width=True):
     shown_samples.dataframe(
         df[df.quantity < 0].sample(10), use_container_width=True)
 
