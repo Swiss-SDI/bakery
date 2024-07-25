@@ -5,4 +5,4 @@ scikit-learn
 xgboost
 plotly
 ipykernel
-pandas==1.5.3
+pandas
