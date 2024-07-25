@@ -53,7 +53,7 @@ Sélectionnez le **pourcentage** de données que vous souhaitez utiliser pour l'
 def load_data():
     df = pd.read_csv('data/bakery_sales_cleaned.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
-    df.index = df['datetime']
+    df.set_index('datetime', inplace=True)
 
     df = df.resample(rule='1D').sum()
     df['datetime'] = df.index

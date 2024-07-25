@@ -147,7 +147,7 @@ chosen_time_step = st.selectbox(
 )
 
 tmp = df[['datetime', 'full_price']].copy()
-tmp.index = tmp['datetime']
+tmp.set_index('datetime', inplace=True)
 
 if chosen_time_step != 'None':
     tmp = tmp.resample(rule=dct[chosen_time_step]).sum()
