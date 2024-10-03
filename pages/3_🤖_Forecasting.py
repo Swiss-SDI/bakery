@@ -140,7 +140,8 @@ features = st.multiselect(
 
 ml_model = st.selectbox(
     "Choisissez le modèle de machine learning:",
-    ['Linear Regression', 'Lasso', 'XGB', 'Decision Tree'],
+    #['Linear Regression', 'Lasso', 'XGB', 'Decision Tree'],
+    ['Linear Regression', 'Lasso', 'Decision Tree'],
     label_visibility='visible',
 )
 
