@@ -162,7 +162,7 @@ if st.button('Train model', type='primary', use_container_width=True):
             model = LinearRegression()
         elif ml_model == 'XGB':
             model = xgb.XGBRegressor(
-                eta=0.1, gamma=5, max_depth=4, reg_lambda=0.2, reg_alpha=10, tree_method='exact')
+                eta=0.1, gamma=5, max_depth=4, reg_lambda=0.2, reg_alpha=10, n_estimators=100)
         elif ml_model == 'Decision Tree':
             model = DecisionTreeRegressor()
         elif ml_model == 'Lasso':
