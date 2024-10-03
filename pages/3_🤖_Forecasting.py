@@ -140,8 +140,7 @@ features = st.multiselect(
 
 ml_model = st.selectbox(
     "Choisissez le modèle de machine learning:",
-    #['Linear Regression', 'Lasso', 'XGB', 'Decision Tree'],
-    ['Linear Regression', 'Lasso', 'Decision Tree'],
+    ['Linear Regression', 'Lasso', 'XGB', 'Decision Tree'],
     label_visibility='visible',
 )
 
@@ -163,7 +162,7 @@ if st.button('Train model', type='primary', use_container_width=True):
             model = LinearRegression()
         elif ml_model == 'XGB':
             model = xgb.XGBRegressor(
-                eta=0.1, gamma=5, max_depth=4, reg_lambda=0.2, reg_alpha=10, n_estimators=100)
+                eta=0.1, gamma=5, max_depth=4, reg_lambda=0.2, reg_alpha=10, n_estimators=50)
         elif ml_model == 'Decision Tree':
             model = DecisionTreeRegressor()
         elif ml_model == 'Lasso':
