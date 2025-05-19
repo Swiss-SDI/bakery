@@ -52,21 +52,21 @@ Sélectionnez le **pourcentage** de données que vous souhaitez utiliser pour l'
 @st.cache_data
 def load_data():
     df = pd.read_csv('data/bakery_sales_cleaned.csv')
-    df['datetime'] = pd.to_datetime(df['datetime'])
-    df.set_index('datetime', inplace=True)
+    df['date_heure'] = pd.to_datetime(df['date_heure'])
+    df.set_index('date_heure', inplace=True)
 
     df = df.resample(rule='1D').sum()
     df.reset_index(inplace=True)
 
-    df['year'] = df['datetime'].dt.year
-    df['month'] = df['datetime'].dt.month
-    df['day_of_week'] = df['datetime'].dt.day_of_week
+    df['annee'] = df['date_heure'].dt.year
+    df['mois'] = df['date_heure'].dt.month
+    df['jour_de_la_semaine'] = df['date_heure'].dt.day_of_week
 
-    df['revenue_prev_day'] = df['full_price'].shift(1)
-    df['quantity_prev_day'] = df['quantity'].shift(1)
+    df['revenu_jour_precedent'] = df['prix_total'].shift(1)
+    df['quantite_jour_precedent'] = df['quantite'].shift(1)
 
-    df['revenue_prev_week'] = df['full_price'].shift(7)
-    df['quantity_prev_week'] = df['quantity'].shift(7)
+    df['revenu_semaine_precedente'] = df['prix_total'].shift(7)
+    df['quantite_semaine_precedente'] = df['quantite'].shift(7)
 
     df = df.dropna(axis=0)
 
@@ -79,15 +79,15 @@ perc_training = st.slider(
     "Pourcentage des données d'entrainement", 0, 100, 50)
 split_methodo = st.selectbox(
     "Méthodologie pour séparer les données:",
-    ['testing after training', 'testing before training', 'random'],
+    ['Aléatoire', 'Entrainement avant test', 'Entrainement après test'],
     label_visibility='visible',
 )
 
-if split_methodo == 'random':
+if split_methodo == 'Aléatoire':
     df['train'] = np.random.rand(len(df)) <= perc_training/100
-elif split_methodo == 'testing after training':
+elif split_methodo == 'Entrainement avant test':
     df['train'] = df.index <= perc_training/100*len(df)
-elif split_methodo == 'testing before training':
+elif split_methodo == 'Entrainement après test':
     df['train'] = ~(df.index <= (1-perc_training/100)*len(df))
 
 df['Split'] = df['train'].apply(lambda x: 'Train' if x else 'Test')
@@ -96,13 +96,13 @@ color_discrete_map = {'Train': '#636EFA',
                       'Test': '#EF553B', 'Predicted': '#00CC96'}
 
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=df[df['train']]['datetime'], y=df[df['train']]
-                         ['full_price'], mode='markers', name='Train data', marker_color='#636EFA'))
-fig.add_trace(go.Scatter(x=df[~df['train']]['datetime'], y=df[~df['train']]
-                         ['full_price'], mode='markers', name='Test data', marker_color='#EF553B'))
+fig.add_trace(go.Scatter(x=df[df['train']]['date_heure'], y=df[df['train']]
+                         ['prix_total'], mode='markers', name="Données d'entrainement", marker_color='#636EFA'))
+fig.add_trace(go.Scatter(x=df[~df['train']]['date_heure'], y=df[~df['train']]
+                         ['prix_total'], mode='markers', name="Données de test", marker_color='#EF553B'))
 fig.update_layout(
     xaxis_title="Dates",
-    yaxis_title="Revenue",
+    yaxis_title="Revenu",
 )
 st.plotly_chart(fig, use_container_width=True)
 
@@ -134,9 +134,21 @@ Nous vous proposons ci-dessous de choisir le modèle ainsi que les variables  qu
 
 features = st.multiselect(
     'Choisissez les variables:',
-    ['year', 'month', 'day_of_week', 'quantity', 'revenue_prev_day',
-        'quantity_prev_day', 'revenue_prev_week', 'quantity_prev_week'],
-    ['day_of_week', 'month'])
+    ['Année', 'Mois', 'Jour de la semaine', 'Revenu','Quantité', 'Revenu du jour précédent',
+        'Quantité du jour précédent', 'Revenu de la semaine précédente', 'Quantité de la semaine précédente'],
+    ['Jour de la semaine', 'Mois'])
+
+renaming_dict = {
+    'Année': 'annee',
+    'Mois': 'mois',
+    'Jour de la semaine': 'jour_de_la_semaine',
+    'Revenu': 'prix_total',
+    'Quantité': 'quantite',
+    'Revenu du jour précédent': 'revenu_jour_precedent',
+    'Quantité du jour précédent': 'quantite_jour_precedent',
+    'Revenu de la semaine précédente': 'revenu_semaine_precedente',
+    'Quantité de la semaine précédente': 'quantite_semaine_precedente',
+}
 
 ml_model = st.selectbox(
     "Choisissez le modèle de machine learning:",
@@ -144,18 +156,20 @@ ml_model = st.selectbox(
     label_visibility='visible',
 )
 
-target = 'full_price'
+target = 'prix_total'
 
-X_train = df[df['train']][features]
+features_renamed = [renaming_dict[feature] for feature in features]
+
+X_train = df[df['train']][features_renamed]
 y_train = df[df['train']][target]
 
-X_test = df[~df['train']][features]
+X_test = df[~df['train']][features_renamed]
 y_test = df[~df['train']][target]
 
-if st.button('Train model', type='primary', use_container_width=True):
+if st.button('Entraîner le modèle', type='primary', use_container_width=True):
 
     if len(features) == 0:
-        st.markdown("**Please choose at least one feature!**")
+        st.markdown("**Veuillez choisir au moins une variable!**")
     else:
 
         if ml_model == 'Linear Regression':
@@ -172,15 +186,15 @@ if st.button('Train model', type='primary', use_container_width=True):
         y_pred = model.predict(X_test)
 
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df[df['train']]['datetime'], y=df[df['train']]
-                                 ['full_price'], mode='markers', name='Train data', marker_color='#636EFA'))
-        fig.add_trace(go.Scatter(x=df[~df['train']]['datetime'], y=df[~df['train']]
-                                 ['full_price'], mode='markers', name='Test data', marker_color='#EF553B'))
-        fig.add_trace(go.Scatter(x=df[~df['train']]['datetime'], y=y_pred, mode='markers',
-                                 marker_line_width=2, name='Predicted data', marker_color='#00CC96'))
+        fig.add_trace(go.Scatter(x=df[df['train']]['date_heure'], y=df[df['train']]
+                                 ['prix_total'], mode='markers', name="Données d'entrainement", marker_color='#636EFA'))
+        fig.add_trace(go.Scatter(x=df[~df['train']]['date_heure'], y=df[~df['train']]
+                                 ['prix_total'], mode='markers', name="Données de test", marker_color='#EF553B'))
+        fig.add_trace(go.Scatter(x=df[~df['train']]['date_heure'], y=y_pred, mode='markers',
+                                 marker_line_width=2, name="Données prédites", marker_color='#00CC96'))
         fig.update_layout(
             xaxis_title="Dates",
-            yaxis_title="Revenue",
+            yaxis_title="Revenu",
         )
         st.plotly_chart(fig, use_container_width=True)
 

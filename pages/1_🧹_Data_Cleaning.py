@@ -7,7 +7,6 @@ import inspect
 import numpy as np
 import pandas as pd
 import streamlit as st
-from streamlit_extras.switch_page_button import switch_page
 
 st.set_page_config(
     page_title="Data Cleaning",
@@ -86,8 +85,7 @@ Par exemple, nous souhaitons que les quantités soient des chiffres (et non des 
 
 Observons le type de chacune de nos colonnes:""")
 
-st.dataframe(dict(df.dtypes))
-
+st.dataframe(dict(df.dtypes.astype(str)), use_container_width=True)
 
 with st.expander("Que signifient ces types ?"):
     st.markdown("""
@@ -104,7 +102,7 @@ with st.expander("Réponse:"):
     st.markdown("""
     Il y a effectivement quelques problèmes à résoudre :
     - Le prix unitaire est au format "string", c'est-à-dire qu'il ne s'agit pas d'un nombre. Nous devons donc le modifier.
-    - Les variables `date` et `time` doivent être dans un format `datetime` spécifique pour être analysées correctement.""")
+    - Les variables `date` et `heure` doivent être dans un format `datetime` spécifique pour être analysées correctement.""")
 
 st.markdown("""
 Nous allons en profitez pour ajouter une colonne qui nous semble nécessaire: le **prix total**. On peut le faire en multipliant la variable `Quantity` par la variable `unit_price`.
@@ -132,22 +130,20 @@ def clean_df(data):
     """
 
     # Create a datetime variable and use the right type
-    data['datetime'] = data['date'] + ' ' + data['time']
-    data['datetime'] = pd.to_datetime(data['datetime'])
+    data['date_heure'] = data['date'] + ' ' + data['heure']
+    data['date_heure'] = pd.to_datetime(data['date_heure'])
 
     # Change unit_price to a float
-    data['unit_price'] = data['unit_price'].apply(
+    data['prix_unitaire'] = data['prix_unitaire'].apply(
         lambda x: float(x[:-2].replace(',', '.')))
 
     # Compute the full price
-    data['full_price'] = data['Quantity'] * data['unit_price']
+    data['prix_total'] = data['quantite'] * data['prix_unitaire']
 
-    # Rename a column
-    data = data.rename(columns={'Quantity': 'quantity'})
 
     # Select all final columns
-    data = data[['datetime', 'article',
-                 'quantity', 'unit_price', 'full_price']]
+    data = data[['date_heure', 'article',
+                 'quantite', 'prix_unitaire', 'prix_total']]
 
     return data
 
@@ -159,12 +155,8 @@ with st.expander("Vous voulez savoir à quoi ressemble le code python pour cette
 
 st.dataframe(df, use_container_width=True)
 
-with open('data/bakery_sales_cleaned.csv', 'r') as f:
-    st.download_button('Téléchargez les données', f, 'bakery_sales_cleaned.csv', 'text/csv', use_container_width=True)
-
-
 st.markdown("""
-Selon vous, la variable `ticket_number` était-elle vraiment inutile ? A quoi pourrait-elle nous servir ? 
+Selon vous, la variable `numero_ticket` était-elle vraiment inutile ? A quoi pourrait-elle nous servir ? 
 """)
 
 st.divider()
@@ -184,7 +176,7 @@ le nombre d'observations, la moyenne, la déviation standard, le miniumum, le qu
 
 Remarque: dans la tableau ci-dessous la séparation entre milliers et centaines est représentée par la virgule.""")
 
-st.dataframe(df.describe(), use_container_width=True)
+st.dataframe(df.describe().round(3).astype(str), use_container_width=True)
 
 st.markdown("""
 **Questions**:
@@ -216,12 +208,12 @@ Observons les données pour comprendre ce qu'il se passe.
 """)
 
 
-shown_samples = st.dataframe(df[df.quantity < 0].sample(
+shown_samples = st.dataframe(df[df['quantite'] < 0].sample(
     10, random_state=13), use_container_width=True)
 
 if st.button('Charger 10 autres exemples', use_container_width=True):
     shown_samples.dataframe(
-        df[df.quantity < 0].sample(10), use_container_width=True)
+        df[df['quantite'] < 0].sample(10), use_container_width=True)
 
 st.markdown("""
 Vous pouvez maintenant sélectionner l'un des indices dans le DataFrame et le saisir dans la case ci-dessous.
@@ -275,14 +267,14 @@ def cancel_negative_sales(data):
     idx_to_del = []
 
     # Go through each row of the DF where the quantity is negative
-    for i, row in data[data.quantity < 0].iterrows():
+    for i, row in data[data['quantite'] < 0].iterrows():
 
         # Get the rows before the current one
         tmp = data.iloc[0:i]
 
         # Get the rows with the same article and the same quantity as a positive number
-        tmp = tmp[(tmp.article == row.article) &
-                  (tmp.quantity == -row.quantity)]
+        tmp = tmp[(tmp['article'] == row['article']) &
+                  (tmp['quantite'] == -row['quantite'])]
 
         # Get the latest index, i.e. the closest to the current one
         idx = tmp.index[-1]
@@ -310,7 +302,7 @@ Le problème de quantité négative devrait être résolu.
 Pour en être absolument certain, observons à nouveau les statistiques principales.
 """)
 
-st.dataframe(df.describe(), use_container_width=True)
+st.dataframe(df.describe().round(3).astype(str), use_container_width=True)
 
 st.markdown("""
 Nous voyons dorénavant que la quantité minimale est effectivement de 1.
@@ -324,9 +316,9 @@ st.markdown("""
 Comme précédemment, observons les données quand le prix unitaire `unit_price` est égale à 0.
 """)
 
-st.dataframe(df[df.unit_price == 0], use_container_width=True)
+st.dataframe(df[df['prix_unitaire'] == 0], use_container_width=True)
 
-nbr_sales_0 = len(df[df.unit_price == 0])
+nbr_sales_0 = len(df[df['prix_unitaire'] == 0])
 
 st.markdown(f"""
 Il y a  {nbr_sales_0} ventes avec un prix unitaire de 0.
@@ -348,12 +340,19 @@ st.markdown("""
 Voici une dernière fois nos statistiques de base:
     """)
 
-df = df[df.unit_price > 0]
+df = df[df['prix_unitaire'] > 0]
+
+st.markdown("""
+Si vous souhaitez analyser ces données avec votre outil préféré, vous pouvez les télécharger ci-dessous.
+""")
 
 # We can run this to save the cleaned file
 # df.to_csv('data/bakery_sales_cleaned.csv', index=False)
 
-st.dataframe(df.describe(), use_container_width=True)
+with open('data/bakery_sales_cleaned.csv', 'r') as f:
+    st.download_button('Téléchargez les données', f, 'bakery_sales_cleaned.csv', 'text/csv', use_container_width=True)
+
+st.dataframe(df.describe().round(3).astype(str), use_container_width=True)
 
 st.markdown("""
 **Félicitations!**
@@ -366,4 +365,4 @@ Vous pouvez démarrer dans l'analyse des données!
 """)
 
 if st.button('Aller vers 📈 Data Analysis', type='primary', use_container_width=True):
-    switch_page('Data_Analysis')
+    st.switch_page('pages/2_📈_Data_Analysis.py')

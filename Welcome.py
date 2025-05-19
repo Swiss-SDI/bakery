@@ -3,7 +3,6 @@
 # Copyright 2023, Swiss Statistical Design & Innovation Sàrl
 
 import streamlit as st
-from streamlit_extras.switch_page_button import switch_page
 
 st.set_page_config(
     page_title="Bienvenue",
@@ -33,4 +32,4 @@ Dirigiez-vous sans attendre vers la première étape!
 
 
 if st.button('Aller vers 🧹 Data Cleaning', type='primary', use_container_width=True):
-    switch_page('Data_Cleaning')
+    st.switch_page('pages/1_🧹_Data_Cleaning.py')

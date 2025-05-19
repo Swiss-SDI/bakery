@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from streamlit_extras.switch_page_button import switch_page
 
 st.set_page_config(
     page_title="Data Analysis",
@@ -31,14 +30,14 @@ Observer tranquillement chacune des variables disponibles.""")
 @st.cache_data
 def load_data():
     df = pd.read_csv('data/bakery_sales_cleaned.csv')
-    df['datetime'] = pd.to_datetime(df['datetime'])
+    df['date_heure'] = pd.to_datetime(df['date_heure'])
 
     return df
 
 
 df = load_data()
 
-possibilities = ['None']
+possibilities = ['Aucune variable']
 possibilities.extend(df.columns)
 
 variable_to_check = st.selectbox(
@@ -47,62 +46,105 @@ variable_to_check = st.selectbox(
     label_visibility='visible',
 )
 
-if variable_to_check == 'datetime':
+if variable_to_check == 'date_heure':
     tmp = df.copy()
 
     # Plot the avg sales by hours
-    tmp['hour'] = tmp['datetime'].dt.hour
+    tmp['hour'] = tmp['date_heure'].dt.hour
 
     sales_per_hour = tmp.groupby('hour').size(
-    ) / (tmp['datetime'].dt.date.nunique() * 24)
+    ) / (tmp['date_heure'].dt.date.nunique() * 24)
     sales_per_hour = sales_per_hour.reset_index(name='average_sales')
 
-    fig_h = px.bar(sales_per_hour, x='hour', y='average_sales', title='Average Hourly sales', labels={
-                   'hour': 'Hour', 'average_sales': 'Average Sales'})
+    fig_h = px.bar(sales_per_hour, x='hour', y='average_sales', title='Ventes moyennes par heure', labels={
+                   'hour': 'Heure', 'average_sales': 'Ventes moyennes'})
 
     st.plotly_chart(fig_h, use_container_width=True)
 
     # Plot the avg sales by day of the week
-    tmp['day_of_week'] = tmp['datetime'].dt.day_name()
+    tmp['day_of_week'] = tmp['date_heure'].dt.day_name()
 
-    sales_per_day = tmp.groupby('day_of_week').size(
-    ) / (tmp['datetime'].dt.date.nunique() * 7)
+    # Calculate average sales per day
+    sales_per_day = tmp.groupby('day_of_week').size() / tmp['date_heure'].dt.date.nunique()
     sales_per_day = sales_per_day.reset_index(name='average_sales')
 
-    days_of_week = ['Monday', 'Tuesday', 'Wednesday',
-                    'Thursday', 'Friday', 'Saturday', 'Sunday']
+    # Define French day names mapping
+    day_names = {
+        'Monday': 'Lundi',
+        'Tuesday': 'Mardi',
+        'Wednesday': 'Mercredi', 
+        'Thursday': 'Jeudi',
+        'Friday': 'Vendredi',
+        'Saturday': 'Samedi',
+        'Sunday': 'Dimanche'
+    }
+
+    # Create ordered day categories in French
+    french_days = list(day_names.values())
+    sales_per_day['day_of_week'] = sales_per_day['day_of_week'].map(day_names)
     sales_per_day['day_of_week'] = pd.Categorical(
-        sales_per_day['day_of_week'], categories=days_of_week, ordered=True)
+        sales_per_day['day_of_week'],
+        categories=french_days,
+        ordered=True
+    )
+
+    # Sort by day order
     sales_per_day = sales_per_day.sort_values('day_of_week')
 
-    fig_d = px.bar(sales_per_day, x='day_of_week', y='average_sales', title='Average Sales per Day of the Week', labels={
-                   'day_of_week': 'Day of the Week', 'average_sales': 'Average Sales'})
+    # Create bar plot
+    fig_d = px.bar(sales_per_day, x='day_of_week', y='average_sales',
+                   title='Ventes moyennes par jour de la semaine',
+                   labels={'day_of_week': 'Jour de la semaine', 'average_sales': 'Ventes moyennes'})
 
     st.plotly_chart(fig_d, use_container_width=True)
 
     # Plot the avg sales per month
-    tmp['month'] = tmp['datetime'].dt.month_name()
+    tmp['month'] = tmp['date_heure'].dt.month_name()
 
-    sales_per_month = tmp.groupby(
-        'month').size() / tmp['datetime'].dt.year.nunique()
+    # Calculate average sales per month
+    sales_per_month = tmp.groupby('month').size() / tmp['date_heure'].dt.year.nunique()
     sales_per_month = sales_per_month.reset_index(name='average_sales')
 
-    months = ['January', 'February', 'March', 'April', 'May', 'June',
-              'July', 'August', 'September', 'October', 'November', 'December']
+    # Define French month names mapping
+    month_names = {
+        'January': 'Janvier',
+        'February': 'Février', 
+        'March': 'Mars',
+        'April': 'Avril',
+        'May': 'Mai',
+        'June': 'Juin',
+        'July': 'Juillet',
+        'August': 'Août',
+        'September': 'Septembre',
+        'October': 'Octobre',
+        'November': 'Novembre',
+        'December': 'Décembre'
+    }
+
+    # Create ordered month categories in French
+    french_months = list(month_names.values())
+    sales_per_month['month'] = sales_per_month['month'].map(month_names)
     sales_per_month['month'] = pd.Categorical(
-        sales_per_month['month'], categories=months, ordered=True)
+        sales_per_month['month'], 
+        categories=french_months,
+        ordered=True
+    )
+    
+    # Sort by month order
     sales_per_month = sales_per_month.sort_values('month')
 
-    fig_h = px.bar(sales_per_month, x='month', y='average_sales', title='Average Sales per Month', labels={
-                   'month': 'Month', 'average_sales': 'Average Sales'})
+    # Create bar plot
+    fig_h = px.bar(sales_per_month, x='month', y='average_sales', 
+                   title='Ventes moyennes par mois',
+                   labels={'month': 'Mois', 'average_sales': 'Ventes moyennes'})
 
     st.plotly_chart(fig_h, use_container_width=True)
 
-elif variable_to_check != 'None':
+elif variable_to_check != 'Aucune variable':
     fig = px.histogram(df, x=variable_to_check)
 
     fig.update_xaxes(categoryorder="total descending")
-    fig.update_layout(bargap=0.1)
+    fig.update_layout(bargap=0.1, xaxis_title=variable_to_check, yaxis_title="Nombre de ventes")
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -130,14 +172,14 @@ Vous pouvez explorer les différentes possibilités ci-dessous.
 """)
 
 dct = {
-    'hour': '1H',
-    'day': '1D',
-    'week': '1W',
-    'month': '1M',
-    'year': '1Y'
+    'Heure': 'h',
+    'Jour': 'D',
+    'Semaine': 'W',
+    'Mois': 'ME',
+    'Année': 'YE'
 }
 
-time_steps = ['None']
+time_steps = ['Aucun pas de temps']
 time_steps.extend(dct.keys())
 
 chosen_time_step = st.selectbox(
@@ -146,17 +188,17 @@ chosen_time_step = st.selectbox(
     label_visibility='visible',
 )
 
-tmp = df[['datetime', 'full_price']].copy()
-tmp.set_index('datetime', inplace=True)
+tmp = df[['date_heure', 'prix_total']].copy()
+tmp.set_index('date_heure', inplace=True)
 
-if chosen_time_step != 'None':
+if chosen_time_step != 'Aucun pas de temps':
     tmp = tmp.resample(rule=dct[chosen_time_step]).sum()
-    tmp['datetime'] = tmp.index
+    tmp['date_heure'] = tmp.index
 
-    fig = px.scatter(tmp, x='datetime', y="full_price")
+    fig = px.scatter(tmp, x='date_heure', y="prix_total")
     fig.update_layout(
         xaxis_title="Dates",
-        yaxis_title="Revenue",
+        yaxis_title="Revenu",
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -181,4 +223,4 @@ st.markdown("""
     """)
 
 if st.button('Aller vers 🤖 Forecasting', type='primary', use_container_width=True):
-    switch_page('Forecasting')
+    st.switch_page('pages/3_🤖_Forecasting.py')
