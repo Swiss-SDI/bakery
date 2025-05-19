@@ -165,8 +165,8 @@ st.header('Repérez des problèmes dans les données')
 st.markdown("""
 Nous nous sommes beaucoup concentré sur les colonnes. Il est maintenant temps de nous attaquer aux lignes.
 Y a-t-il des observations problématiques ? Essayez d'anticiper des erreurs potentielles:
-- Quelles valeurs pourraient être erronnées pour la variable `quantity` ? 
-- et pour la variable `unit_price` ?
+- Quelles valeurs pourraient être erronnées pour la variable `quantite` ? 
+- et pour la variable `prix_unitaire` ?
 
 
 Un bon réflex consiste généralement à vérifier les statistiques principales telles que la _moyenne_, le _minimum_, le _maximum_, etc.
@@ -183,7 +183,7 @@ st.markdown("""
 - Que remarquez-vous ?
 - Y a-t-il des valeurs incohérentes ?
 - Vos hypothèses se sont-elles avérées ?
-- La variable `full_price` est-elle problématique ?
+- La variable `prix_total` est-elle problématique ?
 """)
 
 with st.expander("Réponse:"):
@@ -200,7 +200,7 @@ with st.expander("Réponse:"):
 st.subheader("Nettoyez les problèmes de quantité")
 
 st.markdown("""
-Tout d'abord, abordons le problème de la `quantity`. La première idée pourrait être d'écarter simplement toutes les lignes si la `quantité` est négative.
+Tout d'abord, abordons le problème de la `quantite`. La première idée pourrait être d'écarter simplement toutes les lignes si la `quantite` est négative.
 Cependant, cela pourrait être une erreur.
 Imaginez que le vendeur/la vendeuse en boulangerie souhaite simplement annuler une vente suite à une erreur de caisse.
 
@@ -307,13 +307,13 @@ st.dataframe(df.describe().round(3).astype(str), use_container_width=True)
 st.markdown("""
 Nous voyons dorénavant que la quantité minimale est effectivement de 1.
 
-Nous pouvons maintenant nous attaquer au problème du `unit_price`.
+Nous pouvons maintenant nous attaquer au problème du `prix_unitaire`.
 """)
 
 st.subheader("Nettoyez les problèmes de prix")
 
 st.markdown("""
-Comme précédemment, observons les données quand le prix unitaire `unit_price` est égale à 0.
+Comme précédemment, observons les données quand le prix unitaire `prix_unitaire` est égale à 0.
 """)
 
 st.dataframe(df[df['prix_unitaire'] == 0], use_container_width=True)
