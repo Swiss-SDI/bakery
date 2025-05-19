@@ -62,10 +62,6 @@ df = load_data()
 
 st.dataframe(df, use_container_width=True)
 
-with open('data/bakery_sales.csv', 'r') as f:
-    st.download_button('Téléchargez les données', f, 'bakery_sales.csv', 'text/csv', use_container_width=True, type='primary')
-
-
 st.markdown("""
 Il est essentiel de commencer par observer vos données. Répondez aux **questions** suivantes:
 - Quelles colonnes avez vous à disposition ?
@@ -82,32 +78,12 @@ st.markdown("""
 Un des critères principaux de la qualité des données est le format.
 Il est important que le manière de représenter l'information (type) soit cohérent avec ce qu'elle signifie.
 Par exemple, nous souhaitons que les quantités soient des chiffres (et non des charactères).
+            
+Par exemple, nous pouvons voir que le prix unitaire est représenté par un "_texte_" (il y a un "€" à la fin) et non un nombre. Nous devons, donc, le modifier pour pouvoir l'utiliser correctement.
 
-Observons le type de chacune de nos colonnes:""")
+Nous allons en profitez pour ajouter une colonne qui nous semble nécessaire: le **prix total**. On peut le faire en multipliant la variable `quantite` par la variable `prix_unitaire`.
 
-st.dataframe(dict(df.dtypes.astype(str)), use_container_width=True)
-
-with st.expander("Que signifient ces types ?"):
-    st.markdown("""
-    - float64: un chiffre à virgule (représenté par 64 bytes)
-    - object: un texte ou un format non numérique indéfini
-    """)
-
-st.markdown("""
-**Questions**:
-- Qu'avez-vous remarqué ?
-- Y a-t-il des problèmes de format ?""")
-
-with st.expander("Réponse:"):
-    st.markdown("""
-    Il y a effectivement quelques problèmes à résoudre :
-    - Le prix unitaire est au format "string", c'est-à-dire qu'il ne s'agit pas d'un nombre. Nous devons donc le modifier.
-    - Les variables `date` et `heure` doivent être dans un format `datetime` spécifique pour être analysées correctement.""")
-
-st.markdown("""
-Nous allons en profitez pour ajouter une colonne qui nous semble nécessaire: le **prix total**. On peut le faire en multipliant la variable `Quantity` par la variable `unit_price`.
-
-Nous allons également supprimer une colonne qui n'est pas nécessaire à l'analyse: `ticket_number`.
+Nous allons également supprimer une colonne qui n'est pas nécessaire à l'analyse: `numero_ticket`.
 
 Voici le résultat:
 """)
@@ -150,14 +126,20 @@ def clean_df(data):
 
 df = clean_df(df)
 
+st.dataframe(df, use_container_width=True)
+
 with st.expander("Vous voulez savoir à quoi ressemble le code python pour cette étape ? Cliquez ici."):
     st.code(inspect.getsource(clean_df), language='python')
-
-st.dataframe(df, use_container_width=True)
 
 st.markdown("""
 Selon vous, la variable `numero_ticket` était-elle vraiment inutile ? A quoi pourrait-elle nous servir ? 
 """)
+
+with st.expander("**Réponse**"):
+    st.markdown("""
+    La variable `numero_ticket` aurait pu nous servir pour identifier les ventes liées à un seul ticket/client pour analyser leur comportement, par exemple. 
+    Dans le cas présent, nous n'en avons pas besoin. Il est donc plus simple de l'enlever.
+    """)
 
 st.divider()
 st.header('Repérez des problèmes dans les données')
@@ -172,21 +154,19 @@ Y a-t-il des observations problématiques ? Essayez d'anticiper des erreurs pote
 Un bon réflex consiste généralement à vérifier les statistiques principales telles que la _moyenne_, le _minimum_, le _maximum_, etc.
 
 La table ci-dessous vous présente pour trois colonnes les statistiques suivantes:
-le nombre d'observations, la moyenne, la déviation standard, le miniumum, le quantile 25, la médiane, le quantile 75, le maximum.
-
-Remarque: dans la tableau ci-dessous la séparation entre milliers et centaines est représentée par la virgule.""")
+le nombre d'observations, la moyenne, la déviation standard, le miniumum, le quantile 25, la médiane, le quantile 75, le maximum.""")
 
 st.dataframe(df.describe().round(3).astype(str), use_container_width=True)
 
 st.markdown("""
-**Questions**:
+**Questions**
 - Que remarquez-vous ?
 - Y a-t-il des valeurs incohérentes ?
 - Vos hypothèses se sont-elles avérées ?
 - La variable `prix_total` est-elle problématique ?
 """)
 
-with st.expander("Réponse:"):
+with st.expander("**Réponse**"):
     st.markdown("""
     Grâce à ces quelques statistiques nous constatons les problèmes suivants :
     - La valeur minimale de la variable `quantité` est négative.
@@ -225,12 +205,12 @@ idx = st.number_input(
 st.dataframe(df.iloc[idx-5:idx+1], use_container_width=True)
 
 st.markdown("""
-**Questions**:
+**Questions**
 - Qu'observez-vous ?
 - Quelle est votre hypothèse ?
 - Comment peut-on résoudre ce problème ?""")
 
-with st.expander("Réponse:"):
+with st.expander("**Réponse**"):
     st.markdown("""
     Vous l'aurez constaté, lorsqu'on trouve une vente avec une quantité négative, il existe une vente similaire avec une quantité positive juste avant.
     L'hypothèse de l'erreur de caisse semble s'avérérer. Il faudrait évidemment vérifier cela avec une personne de la boulangerie.
@@ -323,10 +303,10 @@ nbr_sales_0 = len(df[df['prix_unitaire'] == 0])
 st.markdown(f"""
 Il y a  {nbr_sales_0} ventes avec un prix unitaire de 0.
 
-**Question**:
+**Question**
 - Que feriez-vous de ces valeurs ?""")
 
-with st.expander("Réponse:"):
+with st.expander("**Réponse**"):
     st.markdown("""
     - Certaines de ces valeurs concernent un article vide ou non défini représenté par un point. Nous pouvons les supprimer.
     - Le nombre de ventes nulles est négligeable par rapport à la taille du jeu de données. Nous pouvons également les supprimer.
@@ -342,6 +322,8 @@ Voici une dernière fois nos statistiques de base:
 
 df = df[df['prix_unitaire'] > 0]
 
+st.dataframe(df.describe().round(3).astype(str), use_container_width=True)
+
 st.markdown("""
 Si vous souhaitez analyser ces données avec votre outil préféré, vous pouvez les télécharger ci-dessous.
 """)
@@ -351,8 +333,6 @@ Si vous souhaitez analyser ces données avec votre outil préféré, vous pouvez
 
 with open('data/bakery_sales_cleaned.csv', 'r') as f:
     st.download_button('Téléchargez les données nettoyées', f, 'bakery_sales_cleaned.csv', 'text/csv', use_container_width=True, type='primary')
-
-st.dataframe(df.describe().round(3).astype(str), use_container_width=True)
 
 st.markdown("""
 **Félicitations!**
