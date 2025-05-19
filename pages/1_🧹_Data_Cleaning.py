@@ -63,7 +63,7 @@ df = load_data()
 st.dataframe(df, use_container_width=True)
 
 with open('data/bakery_sales.csv', 'r') as f:
-    st.download_button('Téléchargez les données', f, 'bakery_sales.csv', 'text/csv', use_container_width=True)
+    st.download_button('Téléchargez les données', f, 'bakery_sales.csv', 'text/csv', use_container_width=True, type='primary')
 
 
 st.markdown("""
@@ -350,7 +350,7 @@ Si vous souhaitez analyser ces données avec votre outil préféré, vous pouvez
 # df.to_csv('data/bakery_sales_cleaned.csv', index=False)
 
 with open('data/bakery_sales_cleaned.csv', 'r') as f:
-    st.download_button('Téléchargez les données', f, 'bakery_sales_cleaned.csv', 'text/csv', use_container_width=True)
+    st.download_button('Téléchargez les données nettoyées', f, 'bakery_sales_cleaned.csv', 'text/csv', use_container_width=True, type='primary')
 
 st.dataframe(df.describe().round(3).astype(str), use_container_width=True)
 
