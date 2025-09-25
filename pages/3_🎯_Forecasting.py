@@ -13,7 +13,7 @@ from sklearn.tree import DecisionTreeRegressor
 
 st.set_page_config(
     page_title="Forecasting",
-    page_icon="🤖",
+    page_icon="🎯",
 )
 
 st.title('Prédisez !')
