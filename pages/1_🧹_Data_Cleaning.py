@@ -7,6 +7,7 @@ import inspect
 import numpy as np
 import pandas as pd
 import streamlit as st
+from utils import render_swiss_sdi_footer
 
 st.set_page_config(
     page_title="Data Cleaning",
@@ -346,3 +347,6 @@ Vous pouvez démarrer dans l'analyse des données!
 
 if st.button('Aller vers 📈 Data Analysis', type='primary', use_container_width=True):
     st.switch_page('pages/2_📈_Data_Analysis.py')
+
+# Render the Swiss-SDI footer
+render_swiss_sdi_footer()

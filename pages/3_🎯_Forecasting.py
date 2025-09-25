@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+from utils import render_swiss_sdi_footer
 import xgboost as xgb
 from sklearn.linear_model import Lasso, LinearRegression
 from sklearn.metrics import mean_absolute_error as mae
@@ -247,3 +248,6 @@ Si vous souhaitez en savoir plus sur le sujet, n'hésitez pas à prendre contact
 
 Merci de nous avoir accompagné lors de cette analyse et à bientôt!
     """)
+
+# Render the Swiss-SDI footer
+render_swiss_sdi_footer()

@@ -3,6 +3,7 @@
 # Copyright 2023, Swiss Statistical Design & Innovation Sàrl
 
 import streamlit as st
+from utils import render_swiss_sdi_footer
 
 st.set_page_config(
     page_title="Bienvenue",
@@ -17,7 +18,7 @@ Votre mission du jour est de **prévoir les ventes d'une boulangerie en France**
 
 Vous découvrirez les  étapes clés d'un projet de data science et apprendrez quelques points d'attention à ne pas rater lors d'une analyse.""")
 
-st.image("https://www.parisperfect.com/blog/wp-content/uploads/2017/04/dcp-2016030716268-1024x645.jpg")
+st.image("assets/bakery.jpg")
 
 st.markdown("""
 En particulier, pour mener à bien votre mission, vous traverserez les pas suivants:
@@ -33,3 +34,6 @@ Dirigiez-vous sans attendre vers la première étape!
 
 if st.button('Aller vers 🧹 Data Cleaning', type='primary', use_container_width=True):
     st.switch_page('pages/1_🧹_Data_Cleaning.py')
+
+# Render the Swiss-SDI footer
+render_swiss_sdi_footer()

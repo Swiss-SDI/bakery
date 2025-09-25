@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from utils import render_swiss_sdi_footer
 
 st.set_page_config(
     page_title="Data Analysis",
@@ -224,3 +225,6 @@ st.markdown("""
 
 if st.button('Aller vers 🤖 Forecasting', type='primary', use_container_width=True):
     st.switch_page('pages/3_🤖_Forecasting.py')
+
+# Render the Swiss-SDI footer
+render_swiss_sdi_footer()
