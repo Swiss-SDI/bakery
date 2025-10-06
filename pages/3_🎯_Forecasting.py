@@ -46,7 +46,7 @@ Il y a deux questions principales à se poser au moment de séparer le jeu de do
 st.divider()
 
 st.markdown("""
-Sélectionnez le **pourcentage** de données que vous souhaitez utiliser pour l'entrainement ainsi que la **méthodologie** de séparation des données.
+Sélectionnez le **pourcentage** de données que vous souhaitez utiliser pour l'entrainement.
 """)
 
 
@@ -78,18 +78,8 @@ df = load_data()
 
 perc_training = st.slider(
     "Pourcentage des données d'entrainement", 0, 100, 50)
-split_methodo = st.selectbox(
-    "Méthodologie pour séparer les données:",
-    ['Aléatoire', 'Entrainement avant test', 'Entrainement après test'],
-    label_visibility='visible',
-)
 
-if split_methodo == 'Aléatoire':
-    df['train'] = np.random.rand(len(df)) <= perc_training/100
-elif split_methodo == 'Entrainement avant test':
-    df['train'] = df.index <= perc_training/100*len(df)
-elif split_methodo == 'Entrainement après test':
-    df['train'] = ~(df.index <= (1-perc_training/100)*len(df))
+df['train'] = df.index <= perc_training/100*len(df)
 
 df['Split'] = df['train'].apply(lambda x: 'Train' if x else 'Test')
 
@@ -112,7 +102,6 @@ with st.expander("Astuces"):
     st.markdown("""
 - Dans le cas de série temporelles, il est généralement compliqué d'utiliser une méthode de séparation aléatoire.
 En effet, s'il existe une corrélation entre deux dates proches, votre modèle pourrait s'appuyer sur des données non disponibles dans un contexte réel pour réaliser sa prédiction.
-- Dans une même idée, utiliser des données plus récentes pour prédire des données plus anciennes ne fait pas de sens dans ce contexte.
 - Il existe des méthodes plus évoluées de train/test dites de validation croisées.
 - En pratique, nous réservons souvent 70 à 90 pourcent des données pour l'entraînement.
     """)
